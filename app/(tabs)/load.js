@@ -16,10 +16,20 @@ function formatDateTime(value) {
   return value ? new Date(value).toLocaleString() : '—';
 }
 
-// Built from stitch_coreva_logistics_driver_hub/load_details/code.html.
-// Fields shown are limited to what public.loads actually tracks -- no
-// weight/commodity/earnings fields exist in the schema, so (unlike the
-// Stitch mockup) those aren't shown rather than being invented.
+function formatMiles(value) {
+  return value != null ? `${value} mi` : '—';
+}
+
+function formatWeight(value) {
+  return value != null ? `${value.toLocaleString()} lb` : '—';
+}
+
+// Built from stitch_coreva_logistics_driver_hub/load_details/code.html,
+// reworked toward the denser Uber Freight / J.B. Hunt 360 layout Carlos
+// referenced (2026-08-12): equipment requirements + cargo + load-spec cards
+// instead of one flat field list. Deliberately no rate/pay figure --
+// drivers don't see that in this app (his call), unlike the Uber Freight
+// reference.
 export default function LoadDetails() {
   const { load, loading, error, refetch } = useActiveLoad();
   const router = useRouter();
@@ -82,6 +92,29 @@ export default function LoadDetails() {
               />
             </Section>
 
+            {load.equipment_requirements?.length > 0 && (
+              <Section title="Trailer Requirements" icon="rv-hookup">
+                {load.equipment_requirements.map((requirement) => (
+                  <View key={requirement} className="flex-row items-center gap-2 py-1.5">
+                    <MaterialIcons name="check" size={18} color="#58a756" />
+                    <Text className="text-body-md text-on-surface">{requirement}</Text>
+                  </View>
+                ))}
+              </Section>
+            )}
+
+            <Section title="Cargo">
+              <Field label="Commodity" value={load.commodity} />
+              <Field label="Unit Count" value={load.unit_count} />
+              <Field label="Packaging Type" value={load.packaging_type} last />
+            </Section>
+
+            <Section title="Load Specs">
+              <Field label="Total Distance" value={formatMiles(load.total_distance_miles)} />
+              <Field label="Deadhead" value={formatMiles(load.deadhead_miles)} />
+              <Field label="Weight" value={formatWeight(load.weight_lbs)} last />
+            </Section>
+
             <Section title="Equipment & Paperwork">
               <Field label="Trailer #" value={load.trailer?.trailer_number} />
               <Field label="Truck #" value={load.truck?.unit_number} />
@@ -103,12 +136,13 @@ export default function LoadDetails() {
   );
 }
 
-function Section({ title, children }) {
+function Section({ title, icon, children }) {
   return (
     <View className="rounded-lg border border-outline-variant bg-surface-container-lowest p-stack-md">
-      <Text className="mb-stack-sm border-b border-outline-variant pb-2 font-bold text-headline-md text-on-surface">
-        {title}
-      </Text>
+      <View className="mb-stack-sm flex-row items-center gap-2 border-b border-outline-variant pb-2">
+        {icon && <MaterialIcons name={icon} size={20} color="#00193c" />}
+        <Text className="font-bold text-headline-md text-on-surface">{title}</Text>
+      </View>
       {children}
     </View>
   );
@@ -122,7 +156,7 @@ function Field({ label, value, last = false }) {
       }`}
     >
       <Text className="text-body-md text-on-surface-variant">{label}</Text>
-      <Text className="font-medium text-body-md text-on-surface">{value || '—'}</Text>
+      <Text className="font-medium text-body-md text-on-surface">{value ?? '—'}</Text>
     </View>
   );
 }
