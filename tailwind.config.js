@@ -1,0 +1,75 @@
+// Color/type/spacing tokens copied from
+// ../stitch_coreva_logistics_driver_hub/coreva_logistics/DESIGN.md -- RN
+// can't share the web app's CSS `@theme` block, so this is its own copy of
+// the same "Industrial Minimalism" navy/orange system.
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ['./app/**/*.{js,jsx}', './components/**/*.{js,jsx}'],
+  presets: [require('nativewind/preset')],
+  theme: {
+    extend: {
+      colors: {
+        surface: '#f9f9f9',
+        'surface-dim': '#dadada',
+        'surface-bright': '#f9f9f9',
+        'surface-container-lowest': '#ffffff',
+        'surface-container-low': '#f3f3f3',
+        'surface-container': '#eeeeee',
+        'surface-container-high': '#e8e8e8',
+        'surface-container-highest': '#e2e2e2',
+        'on-surface': '#1a1c1c',
+        'on-surface-variant': '#43474f',
+        outline: '#747781',
+        'outline-variant': '#c4c6d1',
+        primary: '#00193c',
+        'on-primary': '#ffffff',
+        'primary-container': '#002d62',
+        'on-primary-container': '#7796d1',
+        secondary: '#904d00',
+        'on-secondary': '#ffffff',
+        'secondary-container': '#fd8b00',
+        'on-secondary-container': '#603100',
+        tertiary: '#001f03',
+        'on-tertiary': '#ffffff',
+        'tertiary-container': '#003709',
+        'on-tertiary-container': '#58a756',
+        error: '#ba1a1a',
+        'on-error': '#ffffff',
+        'error-container': '#ffdad6',
+        'on-error-container': '#93000a',
+        background: '#f9f9f9',
+        'on-background': '#1a1c1c',
+      },
+      borderRadius: {
+        DEFAULT: '0.25rem',
+        lg: '0.5rem',
+        xl: '0.75rem',
+        full: '9999px',
+      },
+      spacing: {
+        'touch-target-min': '48px',
+        gutter: '16px',
+        'margin-mobile': '20px',
+        'stack-sm': '8px',
+        'stack-md': '16px',
+        'stack-lg': '24px',
+      },
+      fontFamily: {
+        sans: ['Inter_400Regular'],
+        medium: ['Inter_600SemiBold'],
+        bold: ['Inter_700Bold'],
+      },
+      fontSize: {
+        'display-lg': ['40px', { lineHeight: '48px' }],
+        'headline-lg': ['32px', { lineHeight: '40px' }],
+        'headline-lg-mobile': ['28px', { lineHeight: '34px' }],
+        'headline-md': ['24px', { lineHeight: '32px' }],
+        'body-lg': ['20px', { lineHeight: '28px' }],
+        'body-md': ['16px', { lineHeight: '24px' }],
+        'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0.05em' }],
+        'button-text': ['18px', { lineHeight: '24px' }],
+      },
+    },
+  },
+  plugins: [],
+};

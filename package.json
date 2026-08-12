@@ -1,18 +1,47 @@
 {
   "name": "coreva_driver_app",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "expo-router/entry",
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
+    "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.112.3",
+    "aes-js": "^3.1.2",
     "expo": "~57.0.12",
+    "expo-constants": "~57.0.10",
+    "expo-font": "~57.0.1",
+    "expo-image-picker": "~57.0.9",
+    "expo-linking": "~57.0.5",
+    "expo-router": "~57.0.12",
+    "expo-secure-store": "~57.0.1",
+    "expo-splash-screen": "~57.0.6",
     "expo-status-bar": "~57.0.1",
+    "nativewind": "^4.2.6",
     "react": "19.2.3",
-    "react-native": "0.86.2"
+    "react-native": "0.86.2",
+    "react-native-get-random-values": "~1.11.0",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-url-polyfill": "^4.0.0",
+    "react-native-worklets": "0.10.1",
+    "tailwindcss": "^3.4.19"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "lint": "eslint ."
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "babel-preset-expo": "~57.0.6",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^15.15.0"
+  }
 }
