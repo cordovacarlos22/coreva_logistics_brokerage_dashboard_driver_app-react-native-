@@ -129,6 +129,12 @@ export default function ShipmentChecklist() {
   const step3Done = checklist.single_stack_confirmed;
   const step4Done = !!photo;
   const step5Done = checklist.status === 'locked';
+  // Once locked, RLS blocks every further update/insert against this
+  // checklist -- no step can ever become "active" again. A step that's
+  // still incomplete on an already-locked checklist (e.g. demo data seeded
+  // before plant_copy_turned_in_at/checklist_photos existed) just has no
+  // record, not a future action.
+  const isLocked = step5Done;
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -164,7 +170,8 @@ export default function ShipmentChecklist() {
           title="Sign for the Shipment"
           description="Sign Plant copy and time stamp."
           done={step1Done}
-          active={!step1Done}
+          active={!step1Done && !isLocked}
+          locked={isLocked}
           doneAt={checklist.signed_at}
         >
           <Button
@@ -179,7 +186,8 @@ export default function ShipmentChecklist() {
           title="Turn in Signed Plant Copy"
           description="Turn in the signed and stamped PLANT COPY before departing."
           done={step2Done}
-          active={step1Done && !step2Done}
+          active={step1Done && !step2Done && !isLocked}
+          locked={isLocked}
           doneAt={checklist.plant_copy_turned_in_at}
         >
           <Button
@@ -194,7 +202,8 @@ export default function ShipmentChecklist() {
           title="Secure the Load"
           description="Secure EVERY load using strap and/or load bar (even if single-stacked). No exceptions."
           done={step3Done}
-          active={step2Done && !step3Done}
+          active={step2Done && !step3Done && !isLocked}
+          locked={isLocked}
         >
           <Button
             label="Confirm Secured"
@@ -208,7 +217,8 @@ export default function ShipmentChecklist() {
           title="Photograph the Strapped Load"
           description="Take a picture of the strapped load. Dispatch forwards it to Steve Diaz (steve.diaz@ipaper.com)."
           done={step4Done}
-          active={step3Done && !step4Done}
+          active={step3Done && !step4Done && !isLocked}
+          locked={isLocked}
         >
           {localPhotoUri && (
             <Image source={{ uri: localPhotoUri }} className="mb-stack-sm h-32 w-full rounded" />
@@ -258,7 +268,7 @@ function Field({ label, value, last = false }) {
   );
 }
 
-function StepCard({ number, title, description, done, active, doneAt, children }) {
+function StepCard({ number, title, description, done, active, locked = false, doneAt, children }) {
   if (done) {
     return (
       <View className="min-h-[80px] flex-row items-center gap-gutter rounded-lg border border-outline-variant bg-surface-container-lowest p-gutter">
@@ -279,11 +289,13 @@ function StepCard({ number, title, description, done, active, doneAt, children }
     return (
       <View className="min-h-[80px] flex-row items-center gap-gutter rounded-lg border border-outline-variant/50 bg-surface-container-lowest p-gutter opacity-60">
         <View className="h-touch-target-min w-touch-target-min items-center justify-center rounded-full bg-surface-container-high">
-          <MaterialIcons name="lock" size={26} color="#747781" />
+          <MaterialIcons name={locked ? 'history' : 'lock'} size={26} color="#747781" />
         </View>
         <View className="flex-1">
           <Text className="text-body-lg text-on-surface">{title}</Text>
-          <Text className="mt-1 text-body-md text-outline">Complete the previous step to unlock</Text>
+          <Text className="mt-1 text-body-md text-outline">
+            {locked ? 'No record on file' : 'Complete the previous step to unlock'}
+          </Text>
         </View>
       </View>
     );
