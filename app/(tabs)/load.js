@@ -12,6 +12,12 @@ const STATUS_LABELS = {
   in_transit: 'In Transit',
 };
 
+const VERIFICATION_LABELS = {
+  pending: 'BOL Pending Verification',
+  ai_verified: 'BOL Verified (AI)',
+  dispatch_verified: 'BOL Verified (Dispatch)',
+};
+
 function formatDateTime(value) {
   return value ? new Date(value).toLocaleString() : '—';
 }
@@ -29,14 +35,17 @@ function formatWeight(value) {
 // referenced (2026-08-12): equipment requirements + cargo + load-spec cards
 // instead of one flat field list. Deliberately no rate/pay figure --
 // drivers don't see that in this app (his call), unlike the Uber Freight
-// reference.
+// reference. Only shows once the load has been activated (arrived_at set)
+// -- otherwise it's still an Activate Shipment concern, not a Current Load
+// one.
 export default function LoadDetails() {
   const { load, loading, error, refetch } = useActiveLoad();
   const router = useRouter();
+  const activated = !!load?.checklist?.arrived_at;
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScreenHeader title="Load Details" />
+      <ScreenHeader title="Current Load" />
       <ScrollView
         className="flex-1 px-margin-mobile"
         contentContainerClassName="gap-gutter pb-stack-lg pt-stack-md"
@@ -63,7 +72,17 @@ export default function LoadDetails() {
           </View>
         )}
 
-        {load && (
+        {load && !activated && (
+          <View className="items-center gap-stack-sm rounded-lg border border-outline-variant bg-surface-container-lowest p-stack-lg">
+            <MaterialIcons name="assignment-turned-in" size={40} color="#747781" />
+            <Text className="text-center font-bold text-headline-md text-on-surface">
+              Load #{load.load_number} isn&apos;t activated yet
+            </Text>
+            <Button label="Go to Activate Shipment" onPress={() => router.push('/')} />
+          </View>
+        )}
+
+        {load && activated && (
           <>
             <View className="flex-row items-center justify-between border-b border-outline-variant pb-stack-sm">
               <View>
@@ -121,11 +140,16 @@ export default function LoadDetails() {
               <Field label="Consignee" value={load.consignee?.name} />
               <Field label="MFO" value={load.bol_mfo} />
               <Field label="PO Number" value={load.bol_po_number} />
-              <Field label="Seal Number" value={load.bol_seal_number} last />
+              <Field label="Seal Number" value={load.bol_seal_number} />
+              <Field
+                label="Verification"
+                value={VERIFICATION_LABELS[load.bol_verification_status] ?? load.bol_verification_status}
+                last
+              />
             </Section>
 
             <Button
-              label="Open Departure Checklist"
+              label="Continue Pickup"
               icon="check-circle"
               onPress={() => router.push(`/checklist/${load.id}`)}
             />

@@ -3,7 +3,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 // DESIGN.md's BottomNavBar: navy background, 4px orange top border, large
 // 24px icons, 12px labels, active state = navy pill + orange top indicator.
-const TAB_ICONS = { index: 'home', load: 'local-shipping', history: 'history' };
+// Renamed from Home/Load/History (Phase 1) to match Carlos's wireframe:
+// Activate Shipment (assigned-not-started loads) / Current Load (the
+// active step-by-step flow) / Load History.
+const TAB_ICONS = { index: 'assignment-turned-in', load: 'local-shipping', history: 'history' };
 
 export default function TabsLayout() {
   return (
@@ -24,8 +27,8 @@ export default function TabsLayout() {
         ),
       })}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="load" options={{ title: 'Load' }} />
+      <Tabs.Screen name="index" options={{ title: 'Activate' }} />
+      <Tabs.Screen name="load" options={{ title: 'Current Load' }} />
       <Tabs.Screen name="history" options={{ title: 'History' }} />
     </Tabs>
   );
