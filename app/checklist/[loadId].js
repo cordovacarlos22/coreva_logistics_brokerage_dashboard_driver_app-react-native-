@@ -23,16 +23,18 @@ import { useAuth } from '../../contexts/AuthContext.js';
 import ScreenHeader from '../../components/ScreenHeader.js';
 import Button from '../../components/Button.js';
 
-// Digitizes Carlos's full Pickup flow (2026-08-12 wireframe): arrival,
-// pre-trip inspection, the real Hub Group paperwork checklist (sign, plant
-// copy, secure, photo, seal), a BOL photo with real OCR, and departure.
+// Digitizes Carlos's full Pickup flow: arrival, the real Hub Group
+// paperwork checklist (sign, BOL photo w/ OCR, plant copy, secure, photo,
+// seal), pre-trip vehicle inspection, and departure.
 //
-// One deliberate reorder from the wireframe: Upload BOL happens right after
-// Sign, not right before Departure. The checklist row locks forever once
-// sealed (RLS), so anything writing to checklist_photos -- BOL included --
-// has to happen before that point, not after. Nothing physically requires
-// BOL after sealing anyway (the seal # was never going to be legible in the
-// photo either way -- see lib/checklists.js).
+// Two deliberate reorders from the original wireframe, both per Carlos:
+// - Upload BOL happens right after Sign, not right before Departure. The
+//   checklist row locks forever once sealed (RLS), so anything writing to
+//   checklist_photos -- BOL included -- has to happen before that point.
+// - Pre-Trip Inspection happens after the checklist (right before
+//   departure) rather than right after arrival -- also just makes more
+//   physical sense: you inspect the assembled, loaded rig right before
+//   pulling out, not before the trailer's even hooked up.
 export default function PickupFlow() {
   const { loadId } = useLocalSearchParams();
   const { user, profile } = useAuth();
@@ -260,35 +262,10 @@ export default function PickupFlow() {
 
         <StepCard
           number={2}
-          title="Pre-Trip Inspection"
-          description="Check the truck and trailer before loading."
-          done={inspectionDone}
-          active={arrivalDone && !inspectionDone}
-          doneAt={inspection.completed_at}
-        >
-          {inspectionItems.map((item, index) => (
-            <InspectionRow
-              key={item.label}
-              item={item}
-              onSetResult={(result) => setItemResult(index, result)}
-            />
-          ))}
-          <Button
-            label="Submit Inspection"
-            icon="build"
-            disabled={!inspectionComplete}
-            loading={busyStep === 'inspection'}
-            onPress={handleSubmitInspection}
-            className="mt-stack-sm"
-          />
-        </StepCard>
-
-        <StepCard
-          number={3}
           title="Sign for the Shipment"
           description="Sign Plant copy and time stamp."
           done={signDone}
-          active={inspectionDone && !signDone && !isLocked}
+          active={arrivalDone && !signDone && !isLocked}
           locked={isLocked}
           doneAt={checklist.signed_at}
         >
@@ -300,7 +277,7 @@ export default function PickupFlow() {
         </StepCard>
 
         <StepCard
-          number={4}
+          number={3}
           title="Photograph the BOL"
           description="Take a picture of the Bill of Lading. Amazon Textract reads the trailer #, MFO, PO #, weight, and commodity automatically."
           done={bolDone}
@@ -320,7 +297,7 @@ export default function PickupFlow() {
         </StepCard>
 
         <StepCard
-          number={5}
+          number={4}
           title="Turn in Signed Plant Copy"
           description="Turn in the signed and stamped PLANT COPY before departing."
           done={plantCopyDone}
@@ -336,7 +313,7 @@ export default function PickupFlow() {
         </StepCard>
 
         <StepCard
-          number={6}
+          number={5}
           title="Secure the Load"
           description="Secure EVERY load using strap and/or load bar (even if single-stacked). No exceptions."
           done={securedDone}
@@ -351,7 +328,7 @@ export default function PickupFlow() {
         </StepCard>
 
         <StepCard
-          number={7}
+          number={6}
           title="Photograph the Strapped Load"
           description="Take a picture of the strapped load. Dispatch forwards it to Steve Diaz (steve.diaz@ipaper.com)."
           done={photoDone}
@@ -370,7 +347,7 @@ export default function PickupFlow() {
         </StepCard>
 
         <StepCard
-          number={8}
+          number={7}
           title="Seal the Trailer"
           description="Never break an existing seal. Put a strap or load bar on BEFORE putting the seal on the trailer."
           done={sealDone}
@@ -394,11 +371,36 @@ export default function PickupFlow() {
         </StepCard>
 
         <StepCard
+          number={8}
+          title="Pre-Trip Inspection"
+          description="Check the truck and trailer before pulling out."
+          done={inspectionDone}
+          active={sealDone && !inspectionDone}
+          doneAt={inspection.completed_at}
+        >
+          {inspectionItems.map((item, index) => (
+            <InspectionRow
+              key={item.label}
+              item={item}
+              onSetResult={(result) => setItemResult(index, result)}
+            />
+          ))}
+          <Button
+            label="Submit Inspection"
+            icon="build"
+            disabled={!inspectionComplete}
+            loading={busyStep === 'inspection'}
+            onPress={handleSubmitInspection}
+            className="mt-stack-sm"
+          />
+        </StepCard>
+
+        <StepCard
           number={9}
           title="Confirm Departure"
           description="Confirm you're leaving the pickup with the load secured and sealed."
           done={departureDone}
-          active={sealDone && !departureDone}
+          active={inspectionDone && !departureDone}
           doneAt={load.picked_up_at}
         >
           <Button

@@ -75,9 +75,15 @@ export default function ActivateShipment() {
               No shipment to activate
             </Text>
             <Text className="text-center text-body-md text-on-surface-variant">
-              You don&apos;t have an assigned load right now. Check back once dispatch assigns you
-              one.
+              Check back once dispatch assigns you one -- or, if you&apos;re at the shipping office
+              with a load dispatch hasn&apos;t entered yet, scan the BOL yourself to start it.
             </Text>
+            <Button
+              label="Scan New Shipment"
+              icon="photo-camera"
+              onPress={() => router.push('/scan-new-shipment')}
+              className="mt-stack-sm w-full"
+            />
           </View>
         )}
 
