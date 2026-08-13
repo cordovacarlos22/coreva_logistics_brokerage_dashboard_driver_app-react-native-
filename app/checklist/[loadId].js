@@ -302,7 +302,7 @@ export default function PickupFlow() {
         <StepCard
           number={4}
           title="Photograph the BOL"
-          description="Take a picture of the Bill of Lading. Google Cloud Vision reads the trailer #, MFO, PO #, weight, and commodity automatically."
+          description="Take a picture of the Bill of Lading. Amazon Textract reads the trailer #, MFO, PO #, weight, and commodity automatically."
           done={bolDone}
           active={signDone && !bolDone && !isLocked}
           locked={isLocked}
