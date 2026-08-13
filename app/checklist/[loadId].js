@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,9 +15,8 @@ import {
   markSecured,
   sealChecklist,
   markDeparted,
-  uploadLoadSecuredPhoto,
-  uploadBolPhoto,
 } from '../../lib/checklists.js';
+import { uploadOrQueue, drainQueue, watchForConnectivity, getQueueCount } from '../../lib/uploadQueue.js';
 import { fetchOrCreateInspection, submitInspection } from '../../lib/preTrip.js';
 import { useAuth } from '../../contexts/AuthContext.js';
 import ScreenHeader from '../../components/ScreenHeader.js';
@@ -53,6 +52,7 @@ export default function PickupFlow() {
   const [error, setError] = useState(null);
   const [busyStep, setBusyStep] = useState(null);
   const [sealInput, setSealInput] = useState('');
+  const [queuedCount, setQueuedCount] = useState(0);
 
   const load_ = useCallback(async () => {
     if (!supabase || !user) return;
@@ -84,6 +84,19 @@ export default function PickupFlow() {
       load_();
     }, [load_])
   );
+
+  // Retries queued uploads (BOL / load-secured photos that failed on a bad
+  // connection) as soon as connectivity returns, and once on mount in case
+  // something was already queued from an earlier session.
+  useEffect(() => {
+    if (!supabase) return undefined;
+    drainQueue(supabase).then(() => getQueueCount().then(setQueuedCount)).then(load_);
+    const unsubscribe = watchForConnectivity(supabase, () => {
+      getQueueCount().then(setQueuedCount);
+      load_();
+    });
+    return unsubscribe;
+  }, [load_]);
 
   async function runStep(stepKey, action) {
     setBusyStep(stepKey);
@@ -127,13 +140,16 @@ export default function PickupFlow() {
     setBusyStep('photo');
     setError(null);
     try {
-      setPhoto(
-        await uploadLoadSecuredPhoto(supabase, {
-          checklistId: checklist.id,
-          uri: asset.uri,
-          mimeType: asset.mimeType,
-        })
-      );
+      const response = await uploadOrQueue('load_secured', supabase, {
+        checklistId: checklist.id,
+        uri: asset.uri,
+        mimeType: asset.mimeType,
+      });
+      if (response.queued) {
+        setQueuedCount((count) => count + 1);
+      } else {
+        setPhoto(response);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -155,14 +171,18 @@ export default function PickupFlow() {
     setBusyStep('bol');
     setError(null);
     try {
-      const response = await uploadBolPhoto(supabase, {
+      const response = await uploadOrQueue('bol', supabase, {
         loadId: load.id,
         checklistId: checklist.id,
         uri: asset.uri,
         mimeType: asset.mimeType,
       });
-      setBolPhoto(response.photo);
-      setBolResult(response);
+      if (response.queued) {
+        setQueuedCount((count) => count + 1);
+      } else {
+        setBolPhoto(response.photo);
+        setBolResult(response);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -241,6 +261,16 @@ export default function PickupFlow() {
             <Text className="font-medium text-body-md text-on-tertiary">
               Checklist locked -- seal #{checklist.seal_number} placed{' '}
               {new Date(checklist.sealed_at).toLocaleString()}
+            </Text>
+          </View>
+        )}
+
+        {queuedCount > 0 && (
+          <View className="flex-row items-center gap-2 rounded border border-secondary-container bg-surface-container-lowest p-stack-md">
+            <MaterialIcons name="cloud-upload" size={22} color="#904d00" />
+            <Text className="flex-1 text-body-md text-on-surface-variant">
+              {queuedCount} photo{queuedCount > 1 ? 's' : ''} waiting for signal -- uploads automatically
+              once you&apos;re back online.
             </Text>
           </View>
         )}

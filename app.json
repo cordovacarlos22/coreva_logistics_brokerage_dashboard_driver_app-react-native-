@@ -25,7 +25,13 @@
       "expo-router",
       "expo-secure-store",
       "expo-font",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Coreva uses your location to fill in the pickup address when you start a new shipment."
+        }
+      ]
     ]
   }
 }
