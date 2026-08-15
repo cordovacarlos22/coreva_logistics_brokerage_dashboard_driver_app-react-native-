@@ -84,6 +84,13 @@ export default function ActivateShipment() {
               onPress={() => router.push('/scan-new-shipment')}
               className="mt-stack-sm w-full"
             />
+            <Button
+              label="Request a Load"
+              variant="outline"
+              icon="campaign"
+              onPress={() => router.push('/load-request')}
+              className="w-full"
+            />
           </View>
         )}
 
