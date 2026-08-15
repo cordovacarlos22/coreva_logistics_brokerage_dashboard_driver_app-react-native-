@@ -49,6 +49,7 @@ function RootNavigator() {
       <Stack.Protected guard={isDriver}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="checklist/[loadId]" />
+        <Stack.Screen name="delivery/[loadId]" />
         <Stack.Screen name="scan-new-shipment" />
       </Stack.Protected>
 

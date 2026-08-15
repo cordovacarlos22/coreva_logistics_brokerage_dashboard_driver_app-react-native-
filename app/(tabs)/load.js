@@ -148,11 +148,19 @@ export default function LoadDetails() {
               />
             </Section>
 
-            <Button
-              label="Continue Pickup"
-              icon="check-circle"
-              onPress={() => router.push(`/checklist/${load.id}`)}
-            />
+            {load.status === 'assigned' ? (
+              <Button
+                label="Continue Pickup"
+                icon="check-circle"
+                onPress={() => router.push(`/checklist/${load.id}`)}
+              />
+            ) : (
+              <Button
+                label="Continue Delivery"
+                icon="local-shipping"
+                onPress={() => router.push(`/delivery/${load.id}`)}
+              />
+            )}
           </>
         )}
       </ScrollView>
