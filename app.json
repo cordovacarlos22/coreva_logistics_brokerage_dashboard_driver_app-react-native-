@@ -29,7 +29,11 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Coreva uses your location to fill in the pickup address when you start a new shipment."
+          "locationWhenInUsePermission": "Coreva uses your location to fill in the pickup address when you start a new shipment.",
+          "locationAlwaysAndWhenInUsePermission": "Coreva tracks your location in the background while you're on an active load, so dispatch and the customer can see real-time truck/trailer position.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
         }
       ]
     ]

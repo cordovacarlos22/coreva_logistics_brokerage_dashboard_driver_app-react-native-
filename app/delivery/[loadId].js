@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabaseClient.js';
 import { fetchLoadById } from '../../lib/loads.js';
 import { fetchOrCreateDeliveryRecord, markArrived, markUnloaded, completeDelivery } from '../../lib/delivery.js';
 import { uploadOrQueue, drainQueue, watchForConnectivity, getQueueCount } from '../../lib/uploadQueue.js';
+import { stopTracking } from '../../lib/gpsTracking.js';
 import { useAuth } from '../../contexts/AuthContext.js';
 import ScreenHeader from '../../components/ScreenHeader.js';
 import Button from '../../components/Button.js';
@@ -113,6 +114,7 @@ export default function DeliveryFlow() {
     setError(null);
     try {
       setDelivery(await completeDelivery(supabase, { deliveryId: delivery.id, loadId: load.id }));
+      stopTracking().catch(() => {});
     } catch (err) {
       setError(err.message);
     } finally {

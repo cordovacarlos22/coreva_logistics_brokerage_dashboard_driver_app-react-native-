@@ -11,6 +11,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { AuthProvider, useAuth } from '../contexts/AuthContext.js';
+import { useGpsTracking } from '../hooks/useGpsTracking.js';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,9 +39,11 @@ function RootNavigator() {
     if (!loading) SplashScreen.hideAsync();
   }, [loading]);
 
+  const isDriver = !loading && !!session && profile?.role === 'driver';
+  useGpsTracking(isDriver);
+
   if (loading) return null;
 
-  const isDriver = !!session && profile?.role === 'driver';
   const wrongRole = !!session && !!profile && profile.role !== 'driver';
   const noProfile = !!session && !profile && !wrongRole;
 

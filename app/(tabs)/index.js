@@ -7,6 +7,7 @@ import { useActiveLoad } from '../../hooks/useActiveLoad.js';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { supabase } from '../../lib/supabaseClient.js';
 import { fetchOrCreateChecklist, markArrived } from '../../lib/checklists.js';
+import { startTracking } from '../../lib/gpsTracking.js';
 import ScreenHeader from '../../components/ScreenHeader.js';
 import Button from '../../components/Button.js';
 
@@ -31,6 +32,7 @@ export default function ActivateShipment() {
     try {
       const checklist = await fetchOrCreateChecklist(supabase, load.id, load.driver_id);
       await markArrived(supabase, checklist.id);
+      startTracking(load.id).catch(() => {});
       await refetch();
       router.push('/load');
     } catch (err) {
