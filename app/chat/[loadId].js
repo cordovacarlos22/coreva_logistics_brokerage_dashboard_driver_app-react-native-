@@ -38,11 +38,13 @@ export default function LoadChat() {
     return unsubscribe;
   }, [refresh, loadId]);
 
-  // Opening this screen is what "reading" the message means here -- there's
-  // no per-message read state, just clear whatever the badge accumulated.
+  // Opening this screen is what "reading" the message means here --
+  // persists a per-load "last viewed" timestamp (see ChatBadgeContext),
+  // not just an in-memory reset, so the badge stays correct across app
+  // restarts too.
   useEffect(() => {
-    clearBadge();
-  }, [clearBadge]);
+    clearBadge(loadId);
+  }, [clearBadge, loadId]);
 
   async function handleSend() {
     const trimmed = body.trim();
