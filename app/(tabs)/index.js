@@ -10,6 +10,7 @@ import { fetchOrCreateChecklist, markArrived } from '../../lib/checklists.js';
 import { startTracking } from '../../lib/gpsTracking.js';
 import ScreenHeader from '../../components/ScreenHeader.js';
 import Button from '../../components/Button.js';
+import Field from '../../components/Field.js';
 
 const dispatchPhone = process.env.EXPO_PUBLIC_DISPATCH_PHONE;
 
@@ -158,18 +159,5 @@ export default function ActivateShipment() {
         )}
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function Field({ label, value, last = false }) {
-  return (
-    <View
-      className={`flex-row items-center justify-between py-3 ${
-        last ? '' : 'border-b border-surface-container-low'
-      }`}
-    >
-      <Text className="text-body-md text-on-surface-variant">{label}</Text>
-      <Text className="font-medium text-body-md text-on-surface">{value ?? '—'}</Text>
-    </View>
   );
 }

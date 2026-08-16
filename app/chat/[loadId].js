@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../contexts/AuthContext.js';
@@ -22,6 +22,7 @@ export default function LoadChat() {
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   const refresh = useCallback(() => {
     fetchLoadMessages(supabase, loadId)
@@ -51,12 +52,19 @@ export default function LoadChat() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <ScreenHeader title="Message Customer" showBack />
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        // Screens with a scrollable body + button-at-the-end (checklist,
+        // delivery) don't need this -- the button just scrolls with the
+        // content. This screen pins the input bar to the bottom instead, so
+        // the offset has to actually match the real distance from the
+        // screen's top edge to this view: the safe-area inset SafeAreaView
+        // already consumed (its `edges` padding isn't visible to
+        // KeyboardAvoidingView) plus ScreenHeader's fixed 48px height.
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 48 : 0}
       >
         <ScrollView
           ref={scrollRef}

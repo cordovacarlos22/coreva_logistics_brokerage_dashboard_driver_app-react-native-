@@ -5,6 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useActiveLoad } from '../../hooks/useActiveLoad.js';
 import ScreenHeader from '../../components/ScreenHeader.js';
 import Button from '../../components/Button.js';
+import Field from '../../components/Field.js';
 
 const STATUS_LABELS = {
   assigned: 'Assigned',
@@ -182,19 +183,6 @@ function Section({ title, icon, children }) {
         <Text className="font-bold text-headline-md text-on-surface">{title}</Text>
       </View>
       {children}
-    </View>
-  );
-}
-
-function Field({ label, value, last = false }) {
-  return (
-    <View
-      className={`flex-row items-center justify-between py-3 ${
-        last ? '' : 'border-b border-surface-container-low'
-      }`}
-    >
-      <Text className="text-body-md text-on-surface-variant">{label}</Text>
-      <Text className="font-medium text-body-md text-on-surface">{value ?? '—'}</Text>
     </View>
   );
 }
