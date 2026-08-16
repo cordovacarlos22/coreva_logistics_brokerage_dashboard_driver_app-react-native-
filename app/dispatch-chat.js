@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import { supabase } from '../lib/supabaseClient.js';
 import { useAuth } from '../contexts/AuthContext.js';
 import { useChatBadge } from '../contexts/ChatBadgeContext.js';
@@ -9,11 +10,17 @@ import ScreenHeader from '../components/ScreenHeader.js';
 import Button from '../components/Button.js';
 
 // Driver's side of the load-independent dispatch thread (driver_messages)
-// -- always just "my own thread with dispatch," no loadId needed, unlike
+// -- always just "my own thread with dispatch," no loadId required, unlike
 // app/chat/[loadId].js (the per-load customer thread) which this otherwise
-// mirrors exactly.
+// mirrors exactly. Optionally opened with loadId/loadNumber params (see
+// checklist/[loadId].js's header button) -- when present, every message
+// sent during this visit gets tagged with that load, so dispatch has
+// context without the driver typing it out. The thread itself always
+// shows every message regardless, tagged or not -- one conversation, not
+// a separate sub-thread per load.
 export default function DispatchChat() {
   const { user } = useAuth();
+  const { loadId, loadNumber } = useLocalSearchParams();
   const [messages, setMessages] = useState(null);
   const [error, setError] = useState(null);
   const [body, setBody] = useState('');
@@ -46,7 +53,12 @@ export default function DispatchChat() {
     setSending(true);
     setError(null);
     try {
-      await sendDriverMessage(supabase, { driverId: user.id, senderId: user.id, body: trimmed });
+      await sendDriverMessage(supabase, {
+        driverId: user.id,
+        senderId: user.id,
+        body: trimmed,
+        loadId: loadId ?? null,
+      });
       setBody('');
     } catch (err) {
       setError(err.message);
@@ -58,6 +70,13 @@ export default function DispatchChat() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <ScreenHeader title="Message Dispatch" showBack />
+      {loadId && (
+        <View className="border-b border-outline-variant bg-secondary-container px-margin-mobile py-1.5">
+          <Text className="text-center text-label-lg font-medium text-on-secondary-container">
+            About Load #{loadNumber ?? loadId}
+          </Text>
+        </View>
+      )}
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -87,6 +106,15 @@ export default function DispatchChat() {
                     own ? 'bg-secondary-container' : 'border border-outline-variant bg-surface-container-lowest'
                   }`}
                 >
+                  {message.load && (
+                    <Text
+                      className={`mb-1 text-[10px] font-semibold uppercase tracking-wide ${
+                        own ? 'text-on-primary/70' : 'text-on-surface-variant'
+                      }`}
+                    >
+                      Re: Load #{message.load.load_number}
+                    </Text>
+                  )}
                   <Text className={own ? 'text-on-primary' : 'text-on-surface'}>{message.body}</Text>
                 </View>
                 <Text className="mt-1 text-label-lg text-outline">

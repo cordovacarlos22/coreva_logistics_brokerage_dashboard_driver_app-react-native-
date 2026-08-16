@@ -247,7 +247,24 @@ export default function PickupFlow() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScreenHeader title="Pickup" showBack />
+      <ScreenHeader
+        title="Pickup"
+        showBack
+        right={
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: '/dispatch-chat',
+                params: { loadId: load.id, loadNumber: load.load_number },
+              })
+            }
+            hitSlop={8}
+            className="h-touch-target-min w-touch-target-min items-center justify-center"
+          >
+            <MaterialIcons name="sms" size={22} color="#00193c" />
+          </Pressable>
+        }
+      />
       <ScrollView
         className="flex-1 px-margin-mobile"
         contentContainerClassName="gap-stack-md pb-stack-lg pt-stack-md"
