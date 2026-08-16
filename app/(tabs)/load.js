@@ -162,12 +162,6 @@ export default function LoadDetails() {
                 onPress={() => router.push(`/delivery/${load.id}`)}
               />
             )}
-            <Button
-              label="Message Customer"
-              variant="outline"
-              icon="chat"
-              onPress={() => router.push(`/chat/${load.id}`)}
-            />
           </>
         )}
       </ScrollView>

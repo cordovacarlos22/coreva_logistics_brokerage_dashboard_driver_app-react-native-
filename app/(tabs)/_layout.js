@@ -6,7 +6,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 // Renamed from Home/Load/History (Phase 1) to match Carlos's wireframe:
 // Activate Shipment (assigned-not-started loads) / Current Load (the
 // active step-by-step flow) / Load History.
-const TAB_ICONS = { index: 'assignment-turned-in', load: 'local-shipping', history: 'history' };
+const TAB_ICONS = {
+  index: 'assignment-turned-in',
+  load: 'local-shipping',
+  chat: 'chat',
+  history: 'history',
+};
 
 export default function TabsLayout() {
   return (
@@ -29,6 +34,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Activate' }} />
       <Tabs.Screen name="load" options={{ title: 'Current Load' }} />
+      <Tabs.Screen name="chat" options={{ title: 'Chat' }} />
       <Tabs.Screen name="history" options={{ title: 'History' }} />
     </Tabs>
   );

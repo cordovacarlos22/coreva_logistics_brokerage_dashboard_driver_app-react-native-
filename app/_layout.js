@@ -1,19 +1,33 @@
 import '../global.css';
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
 import {
   useFonts,
   Inter_400Regular,
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
+import { supabase } from '../lib/supabaseClient.js';
 import { AuthProvider, useAuth } from '../contexts/AuthContext.js';
 import { useGpsTracking } from '../hooks/useGpsTracking.js';
+import { registerPushToken } from '../lib/pushNotifications.js';
 
 SplashScreen.preventAutoHideAsync();
+
+// Without this, a notification that arrives while the app is already open
+// (foreground) is silently swallowed on some platforms instead of showing.
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_600SemiBold, Inter_700Bold });
@@ -31,7 +45,8 @@ export default function RootLayout() {
 }
 
 function RootNavigator() {
-  const { session, profile, loading } = useAuth();
+  const { session, user, profile, loading } = useAuth();
+  const router = useRouter();
 
   // Auth state resolves asynchronously (session restore + profile fetch) --
   // keep the splash screen up rather than flashing the login screen first.
@@ -41,6 +56,22 @@ function RootNavigator() {
 
   const isDriver = !loading && !!session && profile?.role === 'driver';
   useGpsTracking(isDriver);
+
+  useEffect(() => {
+    if (isDriver && user) registerPushToken(supabase, user.id).catch(() => {});
+  }, [isDriver, user]);
+
+  // Tapping a push notification for a new chat message should land the
+  // driver directly on that load's thread -- the backend sets `loadId` in
+  // the notification's data payload when it sends (see
+  // coreva_logistics_brokerage_dashboard_back_end's notifications module).
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const loadId = response.notification.request.content.data?.loadId;
+      if (loadId) router.push(`/chat/${loadId}`);
+    });
+    return () => subscription.remove();
+  }, [router]);
 
   if (loading) return null;
 
