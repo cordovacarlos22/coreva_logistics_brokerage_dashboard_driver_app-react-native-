@@ -65,13 +65,16 @@ function RootNavigator() {
   }, [isDriver, user]);
 
   // Tapping a push notification for a new chat message should land the
-  // driver directly on that load's thread -- the backend sets `loadId` in
-  // the notification's data payload when it sends (see
-  // coreva_logistics_brokerage_dashboard_back_end's notifications module).
+  // driver directly on that thread -- the backend sets `loadId` (a
+  // per-load customer thread) or `dispatchMessage` (the load-independent
+  // dispatch thread) in the notification's data payload when it sends
+  // (see coreva_logistics_brokerage_dashboard_back_end's notifications
+  // module -- two separate webhook routes, two separate payload shapes).
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const loadId = response.notification.request.content.data?.loadId;
-      if (loadId) router.push(`/chat/${loadId}`);
+      const data = response.notification.request.content.data;
+      if (data?.dispatchMessage) router.push('/dispatch-chat');
+      else if (data?.loadId) router.push(`/chat/${data.loadId}`);
     });
     return () => subscription.remove();
   }, [router]);
@@ -88,6 +91,7 @@ function RootNavigator() {
         <Stack.Screen name="checklist/[loadId]" />
         <Stack.Screen name="delivery/[loadId]" />
         <Stack.Screen name="chat/[loadId]" />
+        <Stack.Screen name="dispatch-chat" />
         <Stack.Screen name="load-request" />
         <Stack.Screen name="scan-new-shipment" />
       </Stack.Protected>

@@ -16,6 +16,10 @@ import Button from '../../components/Button.js';
 // each time), so an effect keyed on `load` would re-fire and re-navigate
 // every time this tab regains focus, including right after backing out of
 // chat -- making the back button effectively unusable.
+//
+// Dispatch is a pinned, always-present entry above the load-scoped
+// section -- unlike the customer thread, dispatch messaging doesn't
+// depend on having an active load at all (see app/dispatch-chat.js).
 export default function ChatTab() {
   const { load, loading } = useActiveLoad();
   const router = useRouter();
@@ -23,6 +27,22 @@ export default function ChatTab() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader title="Chat" />
+      <View className="gap-stack-md px-margin-mobile pt-stack-md">
+        <View className="items-center gap-stack-sm rounded border border-outline-variant bg-surface-container-lowest p-stack-lg">
+          <MaterialIcons name="support-agent" size={40} color="#747781" />
+          <Text className="text-center font-bold text-headline-md text-on-surface">Dispatch</Text>
+          <Text className="text-center text-body-md text-on-surface-variant">
+            Message dispatch any time, whether or not you have an active load.
+          </Text>
+          <Button
+            label="Open Chat"
+            icon="chat"
+            onPress={() => router.push('/dispatch-chat')}
+            className="mt-stack-sm w-full"
+          />
+        </View>
+      </View>
+
       <View className="flex-1 items-center justify-center gap-stack-sm px-margin-mobile">
         {loading && !load && <ActivityIndicator color="#00193c" />}
 
