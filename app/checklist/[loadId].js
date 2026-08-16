@@ -387,6 +387,14 @@ export default function PickupFlow() {
           active={photoDone && !sealDone}
           doneAt={checklist.sealed_at}
         >
+          {load.bol_seal_number && (
+            <Text className="mb-stack-sm text-label-lg text-on-surface-variant">
+              IP expects seal #{load.bol_seal_number}
+              {sealInput.trim() && sealInput.trim().toUpperCase() !== load.bol_seal_number.toUpperCase() && (
+                <Text className="font-medium text-error"> -- doesn&apos;t match what you entered</Text>
+              )}
+            </Text>
+          )}
           <TextInput
             value={sealInput}
             onChangeText={setSealInput}

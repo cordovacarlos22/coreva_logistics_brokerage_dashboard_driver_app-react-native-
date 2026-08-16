@@ -16,6 +16,15 @@ import Button from '../components/Button.js';
 
 const OTHER_CONSIGNEE = '__other__';
 
+// Origin is always International Paper's own plant -- the driver is
+// standing there when they scan. GPS reverse-geocoding is the primary
+// source (it's the driver's actual current position); this is the
+// fallback when that fails or is denied, rather than leaving the field
+// blank. Not sourced from the BOL itself: on a real IP BOL the pickup
+// location isn't a distinct per-shipment field, it's this same static
+// address printed in the letterhead every time.
+const IP_ONTARIO_ADDRESS = '5110 E Jurupa St, Ontario, CA 91761';
+
 // The entry point for the case Carlos flagged (2026-08-13): dispatch has no
 // way to pre-create a load, since the driver's BOL photo is the only source
 // of the load's actual details. A driver starts here with no load assigned
@@ -51,9 +60,7 @@ export default function ScanNewShipment() {
 
   useEffect(() => {
     getCurrentAddress()
-      .then((address) => {
-        if (address) setOrigin(address);
-      })
+      .then((address) => setOrigin(address || IP_ONTARIO_ADDRESS))
       .finally(() => setLocatingOrigin(false));
 
     if (supabase) {
@@ -89,8 +96,8 @@ export default function ScanNewShipment() {
       // consignee picker already has, since an OCR'd address isn't
       // necessarily one of the known consignees. Load # pre-fills from
       // IP's own Shipment Plan ID -- still editable, same as the others.
+      // No shipFrom -- origin comes from GPS/IP_ONTARIO_ADDRESS above.
       if (preview.fields.shipmentPlanId) setLoadNumber(preview.fields.shipmentPlanId);
-      if (preview.fields.shipFrom) setOrigin(preview.fields.shipFrom);
       if (preview.fields.shipTo) {
         setSelectedConsigneeId(OTHER_CONSIGNEE);
         setDestination(preview.fields.shipTo);
