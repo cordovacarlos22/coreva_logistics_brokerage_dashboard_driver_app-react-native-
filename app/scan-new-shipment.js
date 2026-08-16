@@ -87,7 +87,9 @@ export default function ScanNewShipment() {
       // guess or an empty field -- overwrite either with it when found.
       // Destination goes through the same "Other" free-text mode the
       // consignee picker already has, since an OCR'd address isn't
-      // necessarily one of the known consignees.
+      // necessarily one of the known consignees. Load # pre-fills from
+      // IP's own Shipment Plan ID -- still editable, same as the others.
+      if (preview.fields.shipmentPlanId) setLoadNumber(preview.fields.shipmentPlanId);
       if (preview.fields.shipFrom) setOrigin(preview.fields.shipFrom);
       if (preview.fields.shipTo) {
         setSelectedConsigneeId(OTHER_CONSIGNEE);
