@@ -53,6 +53,7 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="checklist/[loadId]" />
         <Stack.Screen name="delivery/[loadId]" />
+        <Stack.Screen name="chat/[loadId]" />
         <Stack.Screen name="load-request" />
         <Stack.Screen name="scan-new-shipment" />
       </Stack.Protected>
