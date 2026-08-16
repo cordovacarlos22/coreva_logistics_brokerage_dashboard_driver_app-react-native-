@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Linking, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -19,13 +19,20 @@ const dispatchPhone = process.env.EXPO_PUBLIC_DISPATCH_PHONE;
 // Tapping Activate is what step 1 of the Pickup flow ("confirm arrival")
 // actually does -- see lib/checklists.js's markArrived.
 export default function ActivateShipment() {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const { load, loading, error, refetch } = useActiveLoad();
   const router = useRouter();
   const [activating, setActivating] = useState(false);
   const [activateError, setActivateError] = useState(null);
 
   const needsActivation = load && !load.checklist?.arrived_at;
+
+  function handleSignOut() {
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: signOut },
+    ]);
+  }
 
   async function handleActivate() {
     setActivating(true);
@@ -49,7 +56,18 @@ export default function ActivateShipment() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScreenHeader title="Coreva Logistics" />
+      <ScreenHeader
+        title="Coreva Logistics"
+        right={
+          <Pressable
+            onPress={handleSignOut}
+            hitSlop={8}
+            className="h-touch-target-min w-touch-target-min items-center justify-center"
+          >
+            <MaterialIcons name="logout" size={22} color="#00193c" />
+          </Pressable>
+        }
+      />
       <ScrollView
         className="flex-1 px-margin-mobile"
         contentContainerClassName="gap-gutter pb-stack-lg pt-stack-md"
