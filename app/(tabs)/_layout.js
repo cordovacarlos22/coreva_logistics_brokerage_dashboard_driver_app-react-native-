@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useChatBadge } from '../../contexts/ChatBadgeContext.js';
 
 // DESIGN.md's BottomNavBar: navy background, 4px orange top border, large
 // 24px icons, 12px labels, active state = navy pill + orange top indicator.
@@ -14,6 +15,8 @@ const TAB_ICONS = {
 };
 
 export default function TabsLayout() {
+  const { count } = useChatBadge();
+
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -34,7 +37,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Activate' }} />
       <Tabs.Screen name="load" options={{ title: 'Current Load' }} />
-      <Tabs.Screen name="chat" options={{ title: 'Chat' }} />
+      <Tabs.Screen name="chat" options={{ title: 'Chat', tabBarBadge: count > 0 ? count : undefined }} />
       <Tabs.Screen name="history" options={{ title: 'History' }} />
     </Tabs>
   );

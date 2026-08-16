@@ -13,6 +13,7 @@ import {
 } from '@expo-google-fonts/inter';
 import { supabase } from '../lib/supabaseClient.js';
 import { AuthProvider, useAuth } from '../contexts/AuthContext.js';
+import { ChatBadgeProvider } from '../contexts/ChatBadgeContext.js';
 import { useGpsTracking } from '../hooks/useGpsTracking.js';
 import { registerPushToken } from '../lib/pushNotifications.js';
 
@@ -37,8 +38,10 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="dark" />
-        <RootNavigator />
+        <ChatBadgeProvider>
+          <StatusBar style="dark" />
+          <RootNavigator />
+        </ChatBadgeProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

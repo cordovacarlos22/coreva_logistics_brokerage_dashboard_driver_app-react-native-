@@ -4,6 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../contexts/AuthContext.js';
+import { useChatBadge } from '../../contexts/ChatBadgeContext.js';
 import { fetchLoadMessages, sendLoadMessage, subscribeToLoadMessages } from '../../lib/chat.js';
 import ScreenHeader from '../../components/ScreenHeader.js';
 import Button from '../../components/Button.js';
@@ -23,6 +24,7 @@ export default function LoadChat() {
   const [sending, setSending] = useState(false);
   const scrollRef = useRef(null);
   const insets = useSafeAreaInsets();
+  const { clear: clearBadge } = useChatBadge();
 
   const refresh = useCallback(() => {
     fetchLoadMessages(supabase, loadId)
@@ -35,6 +37,12 @@ export default function LoadChat() {
     const unsubscribe = subscribeToLoadMessages(supabase, loadId, refresh);
     return unsubscribe;
   }, [refresh, loadId]);
+
+  // Opening this screen is what "reading" the message means here -- there's
+  // no per-message read state, just clear whatever the badge accumulated.
+  useEffect(() => {
+    clearBadge();
+  }, [clearBadge]);
 
   async function handleSend() {
     const trimmed = body.trim();
