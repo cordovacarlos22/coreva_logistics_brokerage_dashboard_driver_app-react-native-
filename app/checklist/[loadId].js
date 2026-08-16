@@ -52,13 +52,6 @@ export default function PickupFlow() {
   const [localBolPhotoUri, setLocalBolPhotoUri] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // Separate from `error` (shared/generic, shown at the top of the
-  // screen) -- the vision check can take a while and, in a real
-  // production incident, failed in a way that was easy to miss up there.
-  // This renders right inside step 6's card instead, impossible to miss
-  // regardless of scroll position.
-  const [photoError, setPhotoError] = useState(null);
-  const [photoQueued, setPhotoQueued] = useState(false);
   const [busyStep, setBusyStep] = useState(null);
   const [sealInput, setSealInput] = useState('');
   const [queuedCount, setQueuedCount] = useState(0);
@@ -148,8 +141,6 @@ export default function PickupFlow() {
     setLocalPhotoUri(asset.uri);
     setBusyStep('photo');
     setError(null);
-    setPhotoError(null);
-    setPhotoQueued(false);
     try {
       const response = await uploadOrQueue('load_secured', supabase, {
         loadId: load.id,
@@ -159,12 +150,11 @@ export default function PickupFlow() {
       });
       if (response.queued) {
         setQueuedCount((count) => count + 1);
-        setPhotoQueued(true);
       } else {
-        setPhoto(response.photo);
+        setPhoto(response);
       }
     } catch (err) {
-      setPhotoError(err.message);
+      setError(err.message);
     } finally {
       setBusyStep(null);
     }
@@ -244,13 +234,7 @@ export default function PickupFlow() {
   const bolDone = !!bolPhoto;
   const plantCopyDone = !!checklist.plant_copy_turned_in_at;
   const securedDone = checklist.single_stack_confirmed;
-  // A photo existing isn't enough to unlock sealing -- it also has to have
-  // passed the AI compliance check (or been overridden by dispatch on the
-  // web dashboard). 'fail' deliberately does NOT count as done: the step
-  // stays active so the driver sees the retake button, this hard gate is
-  // the whole point of the feature.
-  const photoFailed = photo?.compliance_status === 'fail';
-  const photoCompliant = photo?.compliance_status === 'pass' || photo?.compliance_status === 'overridden';
+  const photoDone = !!photo;
   const sealDone = checklist.status === 'locked';
   const departureDone = !!load.picked_up_at;
   // Once locked, RLS blocks every further checklist write -- no
@@ -379,48 +363,17 @@ export default function PickupFlow() {
         <StepCard
           number={6}
           title="Photograph the Strapped Load"
-          description="Take a picture of the strapped load. Straps/wrap must be visibly crossing over the load."
-          done={photoCompliant}
-          active={securedDone && !photoCompliant && !isLocked}
+          description="Take a picture of the strapped load. Dispatch forwards it to Steve Diaz (steve.diaz@ipaper.com)."
+          done={photoDone}
+          active={securedDone && !photoDone && !isLocked}
           locked={isLocked}
-          doneAt={photo?.uploaded_at}
         >
           {localPhotoUri && (
             <Image source={{ uri: localPhotoUri }} className="mb-stack-sm h-32 w-full rounded" />
           )}
-          {busyStep === 'photo' && (
-            <View className="mb-stack-sm flex-row items-center gap-2 rounded border border-secondary-container bg-surface-container-lowest p-stack-sm">
-              <ActivityIndicator color="#00193c" />
-              <Text className="flex-1 text-body-md text-on-surface-variant">
-                Checking the photo -- this can take up to 30 seconds.
-              </Text>
-            </View>
-          )}
-          {photoQueued && (
-            <View className="mb-stack-sm flex-row items-center gap-2 rounded border border-secondary-container bg-surface-container-lowest p-stack-sm">
-              <MaterialIcons name="cloud-upload" size={20} color="#904d00" />
-              <Text className="flex-1 text-body-md text-on-surface-variant">
-                No signal right now -- this photo will upload and be checked automatically once
-                you&apos;re back online.
-              </Text>
-            </View>
-          )}
-          {photoError && (
-            <View className="mb-stack-sm rounded border border-error bg-error-container p-stack-sm">
-              <Text className="font-medium text-label-lg text-error">Couldn&apos;t check this photo</Text>
-              <Text className="mt-1 text-body-md text-on-surface">{photoError}</Text>
-            </View>
-          )}
-          {photoFailed && (
-            <View className="mb-stack-sm rounded border border-error bg-error-container p-stack-sm">
-              <Text className="font-medium text-label-lg text-error">Not compliant -- retake required</Text>
-              <Text className="mt-1 text-body-md text-on-surface">{photo.compliance_reason}</Text>
-            </View>
-          )}
           <Button
-            label={photo ? 'Retake Photo' : 'Take Photo'}
+            label={photoDone ? 'Retake Photo' : 'Take Photo'}
             icon="photo-camera"
-            variant={photoFailed ? 'ghost' : 'primary'}
             onPress={handleTakePhoto}
             loading={busyStep === 'photo'}
           />
@@ -431,7 +384,7 @@ export default function PickupFlow() {
           title="Seal the Trailer"
           description="Never break an existing seal. Put a strap or load bar on BEFORE putting the seal on the trailer."
           done={sealDone}
-          active={photoCompliant && !sealDone}
+          active={photoDone && !sealDone}
           doneAt={checklist.sealed_at}
         >
           <TextInput
